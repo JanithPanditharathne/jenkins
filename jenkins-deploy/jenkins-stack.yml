@@ -1,0 +1,48 @@
+version: '3.8'
+services:
+  jenkins:
+    image: jenkins:2.60.3
+    environment:
+      - JENKINS_USER=jenkins    
+      - JENKINS_PASS=jenkins
+      - JENKINS_OPTS="--httpPort=8090"
+    ports:
+      - 8090:8090
+      - 50000:50000
+    volumes:
+      - jenkins_data:/var/jenkins_home
+      - /var/run/docker.sock:/var/run/docker.sock
+    networks:
+      - jenkins-net
+    deploy:
+      mode: replicated
+      replicas: 1
+      restart_policy:
+         condition: on-failure 
+
+  nginx:
+    image: janithp/jenkins-nginx-proxy:1.0.0 
+    depends_on:
+      - jenkins
+    environment:
+      TZ: Asia/Colombo
+      JENKINS_HOSTNAME: 'https://jenkins.example.com'
+      JENKINS_SERVICE_DNS: jenkins
+    volumes:
+      - '/opt/docker/jenkins/nginx/ssl/selfsign.crt:/etc/nginx/ssl/selfsign.crt'
+      - '/opt/docker/jenkins/nginx/ssl/selfsign.key:/etc/nginx/ssl/selfsign.key'
+    networks:
+      - jenkins-net
+    ports:
+      - '443:8443'
+    deploy:
+      mode: global
+      restart_policy:
+        condition: on-failure
+
+volumes:
+  jenkins_data:
+
+networks:
+  jenkins-net:
+    driver: overlay
