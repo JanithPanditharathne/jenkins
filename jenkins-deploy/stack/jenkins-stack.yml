@@ -33,7 +33,7 @@ services:
       - jenkins-net
     volumes:
       - nexus-data:/nexus-data
-      - /opt/docker/jenkins/jenkins-deploy/nexus-configs/nexus.properties:/nexus-data/etc/nexus.properties
+      - /opt/docker/jenkins-deploy/nexus-configs/nexus.properties:/nexus-data/etc/nexus.properties
     deploy:
       mode: global
       restart_policy:
