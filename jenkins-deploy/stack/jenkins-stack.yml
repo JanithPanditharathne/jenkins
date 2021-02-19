@@ -20,6 +20,26 @@ services:
       restart_policy:
          condition: on-failure 
 
+    nexus:
+    image: sonatype/nexus3:latest
+    depends_on:
+      - jenkins
+    environment:
+      TZ: Asia/Colombo
+      NEXUS_SERVICE_DNS: nexus
+    ports:
+      - "8081:8081"
+    networks:
+      - jenkins-net
+    volumes:
+      - nexus-data:/nexus-data
+      - /opt/docker/jenkins/jenkins-deploy/nexus-configs/nexus.properties:/nexus-data/etc/nexus.properties
+    deploy:
+      mode: global
+      restart_policy:
+        condition: on-failure
+
+
   nginx:
     image: janithp/jenkins-nginx-proxy:1.0.0 
     depends_on:
@@ -28,9 +48,10 @@ services:
       TZ: Asia/Colombo
       JENKINS_HOSTNAME: 'https://jenkins.example.com'
       JENKINS_SERVICE_DNS: jenkins
+      NEXUS_SERVICE_DNS: nexus
     volumes:
-      - '/opt/docker/jenkins/nginx/ssl/selfsign.crt:/etc/nginx/ssl/selfsign.crt'
-      - '/opt/docker/jenkins/nginx/ssl/selfsign.key:/etc/nginx/ssl/selfsign.key'
+      - '/opt/docker/jenkins-deploy/nginx/ssl/selfsign.crt:/etc/nginx/ssl/selfsign.crt'
+      - '/opt/docker/jenkins-deploy/nginx/ssl/selfsign.key:/etc/nginx/ssl/selfsign.key'
     networks:
       - jenkins-net
     ports:
